@@ -17,7 +17,7 @@ all:
 	@echo ""
 
 test:
-	PYTHONPATH="${PYTHONPATH}:/" python3 -m unittest discover -s test -p "*_test.py" -b
+	python3 -m pytest test/ -v
 
 build:
 	@python3 setup.py sdist

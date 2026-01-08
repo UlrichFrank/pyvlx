@@ -12,6 +12,7 @@ from .api import get_limitation
 from .api.frames import FrameBase
 from .config import Config
 from .connection import Connection
+from .const import LimitationType
 from .exception import PyVLXException
 from .heartbeat import Heartbeat
 from .klf200gateway import Klf200Gateway
@@ -34,7 +35,14 @@ class PyVLX:
         heartbeat_load_all_states: bool = True,
     ):
         """Initialize PyVLX class."""
-        self.loop = loop or asyncio.get_event_loop()
+        if loop is None:
+            try:
+                self.loop = asyncio.get_running_loop()
+            except RuntimeError:
+                self.loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(self.loop)
+        else:
+            self.loop = loop
         self.config = Config(self, path, host, password)
         self.connection = Connection(loop=self.loop, config=self.config)
         self.heartbeat = Heartbeat(
@@ -104,8 +112,8 @@ class PyVLX:
                     await self.klf200.house_status_monitor_disable(pyvlx=self, timeout=5)
                 # Reboot KLF200 when disconnecting to avoid unresponsive KLF200.
                 await self.klf200.reboot()
-            except (OSError, PyVLXException):
-                PYVLXLOG.exception("Error during disconnect preparations")
+            except (OSError, PyVLXException, asyncio.TimeoutError):
+                PYVLXLOG.debug("Error during disconnect preparations (expected during shutdown)")
             self.connection.disconnect()
             if self.connection.tasks:
                 await asyncio.gather(*self.connection.tasks)  # Wait for all tasks to finish
@@ -120,5 +128,7 @@ class PyVLX:
 
     async def get_limitation(self, node_id: int) -> None:
         """Return limitation."""
-        limit = get_limitation.GetLimitation(self, node_id)
+        limit = get_limitation.GetLimitation(self, node_id, limitation_type=LimitationType.MIN_LIMITATION)
+        await limit.do_api_call()
+        limit = get_limitation.GetLimitation(self, node_id, limitation_type=LimitationType.MAX_LIMITATION)
         await limit.do_api_call()
