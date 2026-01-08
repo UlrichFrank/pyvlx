@@ -37,6 +37,15 @@ class OpeningDevice(Node):
         )
         self.position = Position(parameter=position_parameter)
         self.target_position = Position(parameter=target_position_parameter)
+        self.is_opening: bool = False
+        self.is_closing: bool = False
+        self.state_received_at: Optional[datetime.datetime] = None
+        self.estimated_completion: Optional[datetime.datetime] = None
+        self.use_default_velocity: bool = False
+        self.default_velocity: Velocity = Velocity.DEFAULT
+        self.open_position_target: int = 0
+        self.close_position_target: int = 100
+        self._update_task: Optional[asyncio.Task[None]] = None
         self.limitation_min = IgnorePosition()
         self.limitation_max = IgnorePosition()
         self.limitation_time = 255

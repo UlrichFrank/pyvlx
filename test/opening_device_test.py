@@ -21,7 +21,7 @@ class TestOpeningDevice(IsolatedAsyncioTestCase):
     @patch("pyvlx.Node.after_update", new_callable=AsyncMock)
     async def test_set_position(self, commandSend: AsyncMock, afterUpdate: AsyncMock) -> None:
         """Test set_position of OpeningDevice object."""
-        opening_device = OpeningDevice(pyvlx=self.mocked_pyvlx, node_id=23, name="Test device")
+        opening_device = OpeningDevice(pyvlx=self.mocked_pyvlx, node_id=23, name="Test device", serial_number="000001")
         await opening_device.set_position(position=Position(position_percent=100))
         assert commandSend.called
         assert afterUpdate.called
@@ -29,7 +29,7 @@ class TestOpeningDevice(IsolatedAsyncioTestCase):
     @patch("pyvlx.opening_device.OpeningDevice.set_position", new_callable=AsyncMock)
     async def test_open(self, set_position: AsyncMock) -> None:
         """Test open function of OpeningDevice object."""
-        opening_device = OpeningDevice(pyvlx=self.mocked_pyvlx, node_id=23, name="Test device")
+        opening_device = OpeningDevice(pyvlx=self.mocked_pyvlx, node_id=23, name="Test device", serial_number="000001")
         velocity = Velocity.DEFAULT
         wait_for_completion = False
         await opening_device.open(velocity=velocity, wait_for_completion=wait_for_completion)
@@ -41,7 +41,7 @@ class TestOpeningDevice(IsolatedAsyncioTestCase):
     @patch("pyvlx.opening_device.OpeningDevice.set_position", new_callable=AsyncMock)
     async def test_close(self, set_position: AsyncMock) -> None:
         """Test close function of OpeningDevice object."""
-        opening_device = OpeningDevice(pyvlx=self.mocked_pyvlx, node_id=23, name="Test device")
+        opening_device = OpeningDevice(pyvlx=self.mocked_pyvlx, node_id=23, name="Test device", serial_number="000001")
         velocity = Velocity.DEFAULT
         wait_for_completion = False
         await opening_device.close(velocity=velocity, wait_for_completion=wait_for_completion)
@@ -53,7 +53,7 @@ class TestOpeningDevice(IsolatedAsyncioTestCase):
     @patch("pyvlx.opening_device.OpeningDevice.set_position", new_callable=AsyncMock)
     async def test_stop(self, set_position: AsyncMock) -> None:
         """Test stop function of OpeningDevice object."""
-        opening_device = OpeningDevice(pyvlx=self.mocked_pyvlx, node_id=23, name="Test device")
+        opening_device = OpeningDevice(pyvlx=self.mocked_pyvlx, node_id=23, name="Test device", serial_number="000001")
         wait_for_completion = False
         await opening_device.stop(wait_for_completion=wait_for_completion)
         set_position.assert_awaited_once_with(
