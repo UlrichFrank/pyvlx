@@ -1,9 +1,12 @@
 """Module for Opening devices."""
 import asyncio
 import datetime
-from asyncio import Task
 from typing import TYPE_CHECKING, Any, Optional
 
+if TYPE_CHECKING:
+    from .pyvlx import PyVLX
+
+# pylint: disable=wrong-import-position
 from .api.command_send import CommandSend
 from .api.get_limitation import GetLimitation
 from .api.set_limitation import SetLimitation
@@ -53,7 +56,7 @@ class OpeningDevice(Node):
 
     async def _update_calls(self) -> None:
         """While cover are moving, perform periodically update calls."""
-        while self.is_moving():
+        while self.is_moving():  # type: ignore[attr-defined]
             await asyncio.sleep(1)
             await self.after_update()
         if self._update_task:
@@ -534,12 +537,12 @@ class DualRollerShutter(OpeningDevice):
         kwargs: Any = {}
 
         if curtain == "upper":
-            self.target_position = DualRollerShutterPosition()
+            self.target_position = Position()
             self.active_parameter = 1
             kwargs["fp1"] = position
             kwargs["fp2"] = TargetPosition()
         elif curtain == "lower":
-            self.target_position = DualRollerShutterPosition()
+            self.target_position = Position()
             self.active_parameter = 2
             kwargs["fp1"] = TargetPosition()
             kwargs["fp2"] = position

@@ -85,8 +85,8 @@ class FrameGetLimitationStatusNotification(FrameBase):
         self.session_id: Optional[int] = None
         self.node_id = 0
         self.parameter_id = 0
-        self.min_value: Optional[bytes] = None
-        self.max_value: Optional[bytes] = None
+        self.min_value: Optional[int] = None
+        self.max_value: Optional[int] = None
         self.limit_originator: Optional[Originator] = None
         self.limit_time: Optional[int] = None
 
@@ -100,8 +100,8 @@ class FrameGetLimitationStatusNotification(FrameBase):
         payload = bytes([self.session_id >> 8 & 255, self.session_id & 255])
         payload += bytes([self.node_id])
         payload += bytes([self.parameter_id])
-        payload += self.min_value
-        payload += self.max_value
+        payload += self.min_value if isinstance(self.min_value, bytes) else bytes()
+        payload += self.max_value if isinstance(self.max_value, bytes) else bytes()
         payload += bytes([self.limit_originator.value])
         payload += bytes([self.limit_time])
         return payload

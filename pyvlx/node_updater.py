@@ -2,6 +2,10 @@
 import datetime
 from typing import TYPE_CHECKING, Any
 
+if TYPE_CHECKING:
+    from .pyvlx import PyVLX
+
+# pylint: disable=wrong-import-position
 from .api.frames import (
     FrameGetAllNodesInformationNotification,
     FrameGetLimitationStatusNotification,
@@ -9,8 +13,10 @@ from .api.frames import (
 from .const import NodeParameter, OperatingState
 from .lightening_device import LighteningDevice
 from .log import PYVLXLOG
+from .on_off_switch import OnOffSwitch
 from .opening_device import Blind, OpeningDevice
-from .parameter import Intensity, LimitationTime, Parameter, Position
+from .parameter import (
+    Intensity, LimitationTime, Parameter, Position, SwitchParameter)
 
 
 class NodeUpdater:
@@ -56,7 +62,7 @@ class NodeUpdater:
             node.limitation_time = LimitationTime(limit_raw=frame.limit_time)
             await node.after_update()
 
-    async def process_frame(self, frame):
+    async def process_frame(self, frame):  # pylint: disable=too-many-branches,too-many-statements
         """Update nodes via frame, usually received by house monitor."""
         if isinstance(
             frame,
