@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from .pyvlx import PyVLX
 
+# pylint: disable=wrong-import-position
 from .api.frames import (
     FrameGetAllNodesInformationNotification,
     FrameGetLimitationStatusNotification,

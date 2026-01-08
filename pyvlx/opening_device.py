@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any, Optional
 if TYPE_CHECKING:
     from .pyvlx import PyVLX
 
+# pylint: disable=wrong-import-position
 from .api.command_send import CommandSend
 from .api.get_limitation import GetLimitation
 from .api.set_limitation import SetLimitation
