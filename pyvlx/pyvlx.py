@@ -112,8 +112,8 @@ class PyVLX:
                     await self.klf200.house_status_monitor_disable(pyvlx=self, timeout=5)
                 # Reboot KLF200 when disconnecting to avoid unresponsive KLF200.
                 await self.klf200.reboot()
-            except (OSError, PyVLXException):
-                PYVLXLOG.exception("Error during disconnect preparations")
+            except (OSError, PyVLXException, asyncio.TimeoutError):
+                PYVLXLOG.debug("Error during disconnect preparations (expected during shutdown)")
             self.connection.disconnect()
             if self.connection.tasks:
                 await asyncio.gather(*self.connection.tasks)  # Wait for all tasks to finish

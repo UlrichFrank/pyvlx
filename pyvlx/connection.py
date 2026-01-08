@@ -102,10 +102,20 @@ class Connection:
         self.connected = False
         PYVLXLOG.debug("TCP transport closed.")
         for connection_closed_cb in self.connection_closed_cbs:
-            if asyncio.iscoroutine(connection_closed_cb()):
-                task = self.loop.create_task(connection_closed_cb())
-                self.tasks.add(task)
-                task.add_done_callback(self.tasks.remove)
+            result = connection_closed_cb()
+            if asyncio.iscoroutine(result):
+                # Only create task if loop is still running
+                if not self.loop.is_closed():
+                    try:
+                        task = self.loop.create_task(result)
+                        self.tasks.add(task)
+                        task.add_done_callback(self.tasks.remove)
+                    except RuntimeError:
+                        # Loop is closed, coroutine will be discarded
+                        PYVLXLOG.debug("Cannot create task, event loop is closed")
+                else:
+                    # Close the coroutine to avoid warning
+                    result.close()
 
     async def connect(self) -> None:
         """Connect to gateway via SSL."""
