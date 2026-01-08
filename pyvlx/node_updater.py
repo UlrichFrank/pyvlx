@@ -1,6 +1,6 @@
 """Module for updating nodes via frames."""
 import datetime
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from .api.frames import (
     FrameGetAllNodesInformationNotification,
@@ -9,8 +9,9 @@ from .api.frames import (
 from .const import NodeParameter, OperatingState
 from .lightening_device import LighteningDevice
 from .log import PYVLXLOG
+from .on_off_switch import OnOffSwitch
 from .opening_device import Blind, OpeningDevice
-from .parameter import Intensity, LimitationTime, Parameter, Position
+from .parameter import Intensity, LimitationTime, Parameter, Position, SwitchParameter
 
 
 class NodeUpdater:

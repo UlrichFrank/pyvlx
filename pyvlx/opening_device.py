@@ -1,8 +1,7 @@
 """Module for Opening devices."""
 import asyncio
 import datetime
-from asyncio import Task
-from typing import TYPE_CHECKING, Any, Optional
+from typing import Any, Optional
 
 from .api.command_send import CommandSend
 from .api.get_limitation import GetLimitation
@@ -534,12 +533,12 @@ class DualRollerShutter(OpeningDevice):
         kwargs: Any = {}
 
         if curtain == "upper":
-            self.target_position = DualRollerShutterPosition()
+            self.target_position = Position()
             self.active_parameter = 1
             kwargs["fp1"] = position
             kwargs["fp2"] = TargetPosition()
         elif curtain == "lower":
-            self.target_position = DualRollerShutterPosition()
+            self.target_position = Position()
             self.active_parameter = 2
             kwargs["fp1"] = TargetPosition()
             kwargs["fp2"] = position
