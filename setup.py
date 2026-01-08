@@ -27,8 +27,11 @@ setup(
     description="PyVLX is a wrapper for the Velux KLF 200 API. PyVLX enables you to run scenes and or open and close velux windows.",
     long_description=get_long_description(),
     long_description_content_type="text/markdown",
-    author="Ulrich Frank",
-    author_email="ulrich.frank@web.de",
+    authors=[
+        {"name": "Julius2342", "email": ""},
+        {"name": "Tobias Jaehnel", "email": ""},
+        {"name": "Ulrich Frank", "email": "ulrich.frank@web.de"},
+    ],
     license="LGPL-3.0-only",
     classifiers=[
         "Development Status :: 3 - Alpha",
