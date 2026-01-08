@@ -6,27 +6,20 @@ from typing import TYPE_CHECKING, Any, Optional
 
 from .api.command_send import CommandSend
 from .api.get_limitation import GetLimitation
-from .const import Velocity
+from .api.set_limitation import SetLimitation
+from .const import LimitationType, Originator
 from .exception import PyVLXException
 from .node import Node
 from .parameter import (
-    CurrentPosition, DualRollerShutterPosition, IgnorePosition, Parameter,
+    CurrentPosition, IgnorePosition, LimitationTimeClearAll, Parameter,
     Position, TargetPosition)
-
-if TYPE_CHECKING:
-    from pyvlx import PyVLX
 
 
 class OpeningDevice(Node):
     """Meta class for opening device with one main parameter for position."""
 
     def __init__(
-        self,
-        pyvlx: "PyVLX",
-        node_id: int,
-        name: str,
-        serial_number: Optional[str] = None,
-        position_parameter: Parameter = Parameter(),
+            self, pyvlx, node_id, name, serial_number, position_parameter=Parameter(), target_position_parameter=Parameter()
     ):
         """Initialize opening device.
 
@@ -42,17 +35,12 @@ class OpeningDevice(Node):
         super().__init__(
             pyvlx=pyvlx, node_id=node_id, name=name, serial_number=serial_number
         )
-        self.position: Position = Position(parameter=position_parameter)
-        self.target: Position = Position(parameter=position_parameter)
-        self.is_opening: bool = False
-        self.is_closing: bool = False
-        self.state_received_at: Optional[datetime.datetime] = None
-        self.estimated_completion: Optional[datetime.datetime] = None
-        self.use_default_velocity: bool = False
-        self.default_velocity: Velocity = Velocity.DEFAULT
-        self.open_position_target: int = 0
-        self.close_position_target: int = 100
-        self._update_task: Task | None = None
+        self.position = Position(parameter=position_parameter)
+        self.target_position = Position(parameter=target_position_parameter)
+        self.limitation_min = IgnorePosition()
+        self.limitation_max = IgnorePosition()
+        self.limitation_time = 255
+        self.limitation_originator = Originator.USER
 
     async def _update_calls(self) -> None:
         """While cover are moving, perform periodically update calls."""
@@ -154,39 +142,69 @@ class OpeningDevice(Node):
             position=CurrentPosition(), wait_for_completion=wait_for_completion
         )
 
-    def is_moving(self) -> bool:
-        """Return moving state of the cover."""
-        return self.is_opening or self.is_closing
+    async def set_position_limitations(self, position_min=Position(position_percent=0), position_max=Position(position_percent=100)):
+        """Set a minimum and maximum position limit.
 
-    def movement_percent(self) -> int:
-        """Return movement percentage of the cover."""
-        if (
-            self.estimated_completion is None
-            or self.state_received_at is None
-            or self.estimated_completion < datetime.datetime.now()
-        ):
-            return 100
+        Parameters:
+            * min_position: Position object containing the minimum position.
+            * wait_for_completion: If set, function will return
+                after device has reached target position.
 
-        movement_duration_s: float = (
-            self.estimated_completion - self.state_received_at
-        ).total_seconds()
-        time_passed_s: float = (
-            datetime.datetime.now() - self.state_received_at
-        ).total_seconds()
+        """
+        command_set_limitation = SetLimitation(
+            pyvlx=self.pyvlx,
+            node_id=self.node_id,
+            limitation_value_min=position_min,
+            limitation_value_max=position_max
+        )
+        await command_set_limitation.do_api_call()
+        if not command_set_limitation.success:
+            raise PyVLXException("Unable to set limitations")
+        self.limitation_min = position_min
+        self.limitation_max = position_max
+        await self.after_update()
 
-        percent: int = int(time_passed_s / movement_duration_s * 100)
-        percent = max(percent, 0)
-        percent = min(percent, 100)
-        return percent
+    async def clear_position_limitations(self):
+        """Set position limits.
 
-    def get_position(self) -> Position:
-        """Return position of the cover."""
-        if self.is_moving():
-            percent = self.movement_percent()
-            movement_origin = self.position.position_percent
-            movement_target = self.target.position_percent
-            current_position = (
-                movement_origin + (movement_target - movement_origin) / 100 * percent
+        Parameters:
+            * wait_for_completion: If set, function will return
+                after device has reached target position.
+
+        """
+        command_set_limitation = SetLimitation(
+            pyvlx=self.pyvlx,
+            node_id=self.node_id,
+            limitation_time=LimitationTimeClearAll(),
+        )
+        await command_set_limitation.do_api_call()
+        if not command_set_limitation.success:
+            raise PyVLXException("Unable to send command")
+        self.limitation_min = IgnorePosition()
+        self.limitation_max = IgnorePosition()
+        await self.after_update()
+
+    async def get_limitation(self):
+        """Return limitaation."""
+        get_limitation = GetLimitation(pyvlx=self.pyvlx, node_id=self.node_id)
+        await get_limitation.do_api_call()
+        if not get_limitation.success:
+            raise PyVLXException("Unable to send command")
+        return get_limitation
+
+    async def get_limitation_max(self):
+        """Return maximum limitation."""
+        get_limitation = GetLimitation(pyvlx=self.pyvlx, node_id=self.node_id, limitation_type=LimitationType.MAX_LIMITATION)
+        await get_limitation.do_api_call()
+        if not get_limitation.success:
+            raise PyVLXException("Unable to send command")
+        return get_limitation
+
+    def __str__(self):
+        """Return object as readable string."""
+        return (
+            '<{} name="{}" node_id="{}" serial_number="{}" position="{}"/>'.format(
+                type(self).__name__, self.name, self.node_id, self.serial_number, self.position
             )
             if not self._update_task:
                 self._update_task = self.pyvlx.loop.create_task(self._update_calls())
@@ -248,14 +266,6 @@ class Window(OpeningDevice):
             self.serial_number,
             self.position,
         )
-
-    async def get_limitation(self) -> GetLimitation:
-        """Return limitation."""
-        get_limitation = GetLimitation(pyvlx=self.pyvlx, node_id=self.node_id)
-        await get_limitation.do_api_call()
-        if not get_limitation.success:
-            raise PyVLXException("Unable to send command")
-        return get_limitation
 
 
 class Blind(OpeningDevice):
