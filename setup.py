@@ -8,7 +8,7 @@ REQUIRES = ["PyYAML", "zeroconf"]
 
 PKG_ROOT = os.path.dirname(__file__)
 
-VERSION = "0.2.27"
+VERSION = "0.3.00"
 
 
 def get_long_description() -> str:
@@ -22,27 +22,26 @@ def get_long_description() -> str:
 setup(
     name="pyvlx",
     version=VERSION,
-    download_url="https://github.com/Julius2342/pyvlx/archive/" + VERSION + ".zip",
-    url="https://github.com/Julius2342/pyvlx",
+    download_url="https://github.com/ulrichuf/pyvlx/archive/" + VERSION + ".zip",
+    url="https://github.com/ulrichuf/pyvlx",
     description="PyVLX is a wrapper for the Velux KLF 200 API. PyVLX enables you to run scenes and or open and close velux windows.",
     long_description=get_long_description(),
     long_description_content_type="text/markdown",
-    author="Julius Mittenzwei",
-    author_email="julius@mittenzwei.com",
+    author="Ulrich Frank",
+    author_email="ulrich.frank@web.de",
     license="LGPL-3.0-only",
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: End Users/Desktop",
         "Intended Audience :: Developers",
         "Topic :: System :: Hardware :: Hardware Drivers",
-        "Programming Language :: Python :: 3.11",
-        "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.14",
     ],
     packages=find_packages(exclude=['test*']),
     package_data={
         "pyvlx": ["py.typed"],
     },
-    python_requires='>=3.11',
+    python_requires='>=3.14',
     install_requires=REQUIRES,
     keywords="velux KLF 200 home automation",
     zip_safe=False,

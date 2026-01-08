@@ -35,7 +35,14 @@ class PyVLX:
         heartbeat_load_all_states: bool = True,
     ):
         """Initialize PyVLX class."""
-        self.loop = loop or asyncio.get_event_loop()
+        if loop is None:
+            try:
+                self.loop = asyncio.get_running_loop()
+            except RuntimeError:
+                self.loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(self.loop)
+        else:
+            self.loop = loop
         self.config = Config(self, path, host, password)
         self.connection = Connection(loop=self.loop, config=self.config)
         self.heartbeat = Heartbeat(

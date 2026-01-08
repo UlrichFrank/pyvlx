@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any, Optional
 from .api.command_send import CommandSend
 from .api.get_limitation import GetLimitation
 from .api.set_limitation import SetLimitation
-from .const import LimitationType, Originator
+from .const import LimitationType, Originator, Velocity
 from .exception import PyVLXException
 from .node import Node
 from .parameter import (
