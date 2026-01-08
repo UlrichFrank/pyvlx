@@ -1,7 +1,10 @@
 """Module for Opening devices."""
 import asyncio
 import datetime
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any, Optional
+
+if TYPE_CHECKING:
+    from .pyvlx import PyVLX
 
 from .api.command_send import CommandSend
 from .api.get_limitation import GetLimitation
@@ -52,7 +55,7 @@ class OpeningDevice(Node):
 
     async def _update_calls(self) -> None:
         """While cover are moving, perform periodically update calls."""
-        while self.is_moving():
+        while self.is_moving():  # type: ignore[attr-defined]
             await asyncio.sleep(1)
             await self.after_update()
         if self._update_task:
